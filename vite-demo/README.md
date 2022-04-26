@@ -1,11 +1,113 @@
-# Vue 3 + Typescript + Vite
+### 项目结构
+vue3 + ts + vite
 
-This template should help get you started developing with Vue 3 and Typescript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+### 实现功能
+实现插件：vue3-highcharts
 
-## Recommended IDE Setup
+### 实现细节
+#### 1. directive/index.ts
+对vue3-highcharts进行全局注册
 
-- [VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar)
+```js
+import { App, Plugin } from "vue";
+import vueHighcharts from "./vue3-highcharts";
 
-## Type Support For `.vue` Imports in TS
+const install = (app: App) => {
+  app.component(vueHighcharts.name, vueHighcharts);
+};
 
-Since TypeScript cannot handle type information for `.vue` imports, they are shimmed to be a generic Vue component type by default. In most cases this is fine if you don't really care about component prop types outside of templates. However, if you wish to get actual prop types in `.vue` imports (for example to get props validation when using manual `h(...)` calls), you can enable Volar's `.vue` type support plugin by running `Volar: Switch TS Plugin on/off` from VSCode command palette.
+vueHighcharts.install = install;
+export default vueHighcharts as unknown as Plugin;
+```
+
+#### 2. directive/vue3-highcharts.ts
+
+props：
+
+```js
+props: {
+  // 类型
+  type: {
+    type: String as PropType<keyof typeof Highcharts>,
+    default: "chart",
+  },
+  // 图表数据
+  options: {
+    type: Object as PropType<Options>,
+    required: true,
+  },
+  // 图表更新时是否重绘
+  redrawOnUpdate: {
+    type: Boolean,
+    default: true,
+  },
+  // 图表更新时是否重置
+  oneToOneUpdate: {
+    type: Boolean,
+    default: true,
+  },
+  // 图表更新时是否有动画
+  animateOnUpdate: {
+    type: Boolean,
+    default: true,
+  },
+},
+```
+
+rendered
+
+```js
+// 图表初始化
+onMounted(() => {
+  chart.value = Highcharts[props.type](
+    chartRef.value,
+    options.value,
+    () => {
+      emit("rendered");
+    }
+  );
+});
+```
+
+updated
+
+```js
+// 监听图表更新操作
+watch(
+  options,
+  (newValue) => {
+    if (chart.value !== null) {
+      (chart as unknown as Ref<Chart>).value.update(
+        newValue,
+        props.redrawOnUpdate,
+        props.oneToOneUpdate,
+        props.animateOnUpdate
+      );
+      emit("updated");
+    }
+  },
+  {
+    deep: true,
+  }
+);
+```
+
+destroyed
+
+```js
+// 图表销毁
+onUnmounted(() => {
+  if (chart.value !== null) {
+    chart.value.destroy();
+    emit("destroyed");
+  }
+});
+```
+
+#### 3. main.js
+引入vue3-highcharts
+
+```js
+app.use(VueHighcharts)
+```
+
