@@ -1,12 +1,13 @@
-### 项目结构
+# 项目结构
 vue3 + ts + vite
 
-### 实现功能
+# 实现功能
 实现插件：vue3-highcharts
 
-### 实现细节
-#### 1. directive/index.ts
-对vue3-highcharts进行全局注册
+# 代码细节
+
+## directive/index.ts
+#### 对vue3-highcharts进行全局注册
 
 ```js
 import { App, Plugin } from "vue";
@@ -20,9 +21,9 @@ vueHighcharts.install = install;
 export default vueHighcharts as unknown as Plugin;
 ```
 
-#### 2. directive/vue3-highcharts.ts
+## directive/vue3-highcharts.ts
 
-props：
+#### props：
 
 ```js
 props: {
@@ -54,7 +55,7 @@ props: {
 },
 ```
 
-rendered
+#### rendered
 
 ```js
 // 图表初始化
@@ -69,7 +70,7 @@ onMounted(() => {
 });
 ```
 
-updated
+#### updated
 
 ```js
 // 监听图表更新操作
@@ -92,7 +93,7 @@ watch(
 );
 ```
 
-destroyed
+#### destroyed
 
 ```js
 // 图表销毁
@@ -104,8 +105,9 @@ onUnmounted(() => {
 });
 ```
 
-#### 3. main.js
-引入vue3-highcharts
+## main.js
+
+#### 引入vue3-highcharts
 
 ```js
 app.use(VueHighcharts)
